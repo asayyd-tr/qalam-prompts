@@ -35,7 +35,13 @@ summary{cursor:pointer;color:var(--muted);font-size:.9rem}
 .hint{font-weight:700;margin:10px 0 6px;font-size:.92rem}
 .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
 .hp{position:absolute;left:-9999px}
-#toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:10}
+.modal[hidden]{display:none}
+.mbox{background:var(--card);border:1px solid var(--line);border-radius:14px;width:min(100%,820px);max-height:100%;display:flex;flex-direction:column;padding:16px;gap:10px}
+.mbox h2{margin:0;font-size:1.2rem}
+.mbox .body{max-height:none;flex:1;overflow:auto;font-size:1.05rem}
+#q{margin-bottom:14px}
+#toast{position:fixed;z-index:20;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.show{opacity:1}
 .empty{color:var(--muted);text-align:center;padding:30px}
 </style>
@@ -56,7 +62,15 @@ summary{cursor:pointer;color:var(--muted);font-size:.9rem}
     <textarea id="nb" placeholder="نص البرومت" dir="auto"></textarea>
     <button class="p" id="add">+ إضافة كارت</button>
   </div>
+  <input id="q" type="search" placeholder="🔍 ابحث في العناوين والنصوص…" dir="auto" autocomplete="off">
   <div id="list" class="grid"></div>
+</div>
+<div id="modal" class="modal" hidden>
+  <div class="mbox" role="dialog" aria-modal="true">
+    <h2 id="mt" dir="auto"></h2>
+    <div id="mb" class="body" dir="auto"></div>
+    <div class="row"><button class="p" id="mcopy">📋 نسخ</button><button id="mclose">إغلاق</button></div>
+  </div>
 </div>
 <div id="toast"></div>
 <script>
@@ -119,6 +133,7 @@ function card(p){
     h('h2',{dir:'auto'},p.title),
     h('div',{class:'body',dir:'auto'},p.body),
     h('div',{class:'row'}, h('button',{class:'p',onclick:()=>copy(p.body)},'📋 نسخ'),
+      h('button',{onclick:()=>openModal(p)},'⤢ عرض كامل'),
       isAdmin ? [h('button',{onclick:()=>{editing=p.id;render()}},'تعديل'),
         h('button',{class:'d',onclick:async()=>{if(confirm('حذف الكارت؟')){await sb.from('prompts').delete().eq('id',p.id);load()}}},'حذف')] : ''),
     det);
@@ -126,8 +141,25 @@ function card(p){
 function render(){
   $('adminBox').hidden = !isAdmin;
   $('authBtn').textContent = isAdmin ? 'تسجيل خروج' : 'دخول المشرف';
-  $('list').replaceChildren(...(prompts.length ? prompts.map(card) : [h('div',{class:'empty'},'لا توجد برومبتات بعد')]));
+  const q = norm($('q').value.trim());
+  const shown = q ? prompts.filter(p => norm(p.title + ' ' + p.body).includes(q)) : prompts;
+  $('list').replaceChildren(...(shown.length ? shown.map(card) : [h('div',{class:'empty'}, prompts.length ? 'لا توجد نتائج مطابقة للبحث' : 'لا توجد برومبتات بعد')]));
 }
+function norm(s){
+  return s.toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
+}
+function openModal(p){
+  $('mt').textContent = p.title;
+  $('mb').textContent = p.body;
+  $('mcopy').onclick = () => copy(p.body);
+  $('modal').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){ $('modal').hidden = true; document.body.style.overflow = ''; }
+$('mclose').onclick = closeModal;
+$('modal').onclick = e => { if (e.target === $('modal')) closeModal(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+$('q').oninput = render;
 $('authBtn').onclick = async () => {
   if (isAdmin){ await sb.auth.signOut(); isAdmin=false; editing=null; render(); return; }
   $('login').hidden = !$('login').hidden;
