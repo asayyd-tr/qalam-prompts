@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Qalam Prompts</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f5f1;--card:#fff;--text:#1c1b18;--muted:#6b685f;--line:#dedbd2;--accent:#1f6f5c;--accent-t:#fff;--btn:#efede6;--danger:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161614;--card:#201f1c;--text:#ece9e0;--muted:#9a968a;--line:#35332e;--accent:#4fb89e;--accent-t:#0e1a16;--btn:#2b2a26;--danger:#f2877f}}
+:root[data-theme="dark"]{--bg:#161614;--card:#201f1c;--text:#ece9e0;--muted:#9a968a;--line:#35332e;--accent:#4fb89e;--accent-t:#0e1a16;--btn:#2b2a26;--danger:#f2877f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:20px 14px 50px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
+h1{margin:0;font-size:1.5rem;letter-spacing:.3px}
+h1 small{display:block;font-size:.8rem;font-weight:400;color:var(--muted)}
+button{font:inherit;font-size:.88rem;background:var(--btn);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.p{background:var(--accent);color:var(--accent-t);border-color:var(--accent);font-weight:700}
+button.d{color:var(--danger)}
+input,textarea{font:inherit;width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+textarea{min-height:110px;resize:vertical}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card h2{margin:0;font-size:1.1rem}
+.body{white-space:pre-wrap;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start;background:var(--bg);border-radius:10px;padding:10px 12px;max-height:260px;overflow:auto}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+details{border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+.cm{border-bottom:1px dashed var(--line);padding:6px 0;font-size:.92rem;overflow-wrap:anywhere}
+.cm b{font-size:.82rem;color:var(--muted)}
+.hint{font-weight:700;margin:10px 0 6px;font-size:.92rem}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
+.hp{position:absolute;left:-9999px}
+#toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+.empty{color:var(--muted);text-align:center;padding:30px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Qalam Prompts<small>مكتبة برومبتات — انسخ واستخدم</small></h1>
+    <button id="authBtn">دخول المشرف</button>
+  </header>
+  <div id="login" class="box" hidden>
+    <input id="em" type="email" placeholder="الإيميل" dir="ltr" autocomplete="username">
+    <input id="pw" type="password" placeholder="كلمة المرور" dir="ltr" autocomplete="current-password">
+    <button class="p" id="go">دخول</button>
+  </div>
+  <div id="adminBox" class="box" hidden>
+    <input id="nt" placeholder="عنوان الكارت">
+    <textarea id="nb" placeholder="نص البرومت" dir="auto"></textarea>
+    <button class="p" id="add">+ إضافة كارت</button>
+  </div>
+  <div id="list" class="grid"></div>
+</div>
+<div id="toast"></div>
+<script>
+// ====== ضع بيانات مشروع Supabase هنا ======
+const SUPABASE_URL = 'https://meewtxycccyklmtajtnf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_q-cGK9qlSUoJ_eGfGtVcUQ_VBqra6LV';
+// ==========================================
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = id => document.getElementById(id);
+let isAdmin = false, prompts = [], cms = {}, editing = null, openSet = new Set();
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800)}
+function h(tag, props = {}, ...kids){
+  const e = document.createElement(tag);
+  for (const k in props){ if (k.startsWith('on')) e[k] = props[k]; else if (k === 'class') e.className = props[k]; else e.setAttribute(k, props[k]); }
+  kids.flat().forEach(c => e.append(c));
+  return e;
+}
+async function copy(t){
+  try{ await navigator.clipboard.writeText(t); }
+  catch(e){ const a=h('textarea');a.value=t;document.body.append(a);a.select();document.execCommand('copy');a.remove(); }
+  toast('تم النسخ ✓');
+}
+async function load(){
+  const [p, c] = await Promise.all([
+    sb.from('prompts').select('*').order('created_at', {ascending:false}),
+    sb.from('comments').select('*').order('created_at', {ascending:true})
+  ]);
+  if (p.error){ $('list').replaceChildren(h('div',{class:'empty'},'تعذّر تحميل البيانات — تأكد من إعدادات Supabase')); return; }
+  prompts = p.data || []; cms = {};
+  (c.data || []).forEach(x => (cms[x.prompt_id] ||= []).push(x));
+  render();
+}
+function card(p){
+  if (editing === p.id){
+    const t = h('input',{dir:'auto'}); t.value = p.title;
+    const b = h('textarea',{dir:'auto'}); b.value = p.body;
+    return h('div',{class:'card'}, t, b, h('div',{class:'row'},
+      h('button',{class:'p',onclick:async()=>{const r=await sb.from('prompts').update({title:t.value.trim(),body:b.value}).eq('id',p.id);if(r.error)return toast('فشل الحفظ');editing=null;load()}},'حفظ'),
+      h('button',{onclick:()=>{editing=null;render()}},'إلغاء')));
+  }
+  const list = cms[p.id] || [];
+  const nm = h('input',{placeholder:'اسمك (اختياري)',maxlength:60});
+  const ms = h('textarea',{placeholder:'اكتب ملاحظتك هنا…',maxlength:1000,dir:'auto'});
+  const hp = h('input',{class:'hp',tabindex:'-1',autocomplete:'off','aria-hidden':'true'});
+  const send = h('button',{class:'p',onclick:async()=>{
+    if (hp.value) return;
+    if (!ms.value.trim()) return toast('اكتب ملاحظة أولاً');
+    const r = await sb.from('comments').insert({prompt_id:p.id,name:nm.value.trim()||null,message:ms.value.trim()});
+    if (r.error) return toast('تعذّر الإرسال');
+    openSet.add(p.id); toast('شكراً لملاحظتك'); load();
+  }},'إرسال');
+  const det = h('details',{}, h('summary',{},`💬 الملاحظات (${list.length})`),
+    list.map(c => h('div',{class:'cm'}, h('b',{},(c.name||'زائر')+' · '+new Date(c.created_at).toLocaleDateString('ar-EG')), h('div',{style:'white-space:pre-wrap;unicode-bidi:plaintext'},c.message),
+      isAdmin ? h('button',{class:'d',onclick:async()=>{await sb.from('comments').delete().eq('id',c.id);load()}},'حذف') : '')),
+    h('div',{class:'hint'},'اترك ملاحظاتك لتعديل تراه مناسباً للبرومت'), nm, ms, hp, send);
+  if (openSet.has(p.id)) det.open = true;
+  det.ontoggle = () => det.open ? openSet.add(p.id) : openSet.delete(p.id);
+  return h('div',{class:'card'},
+    h('h2',{dir:'auto'},p.title),
+    h('div',{class:'body',dir:'auto'},p.body),
+    h('div',{class:'row'}, h('button',{class:'p',onclick:()=>copy(p.body)},'📋 نسخ'),
+      isAdmin ? [h('button',{onclick:()=>{editing=p.id;render()}},'تعديل'),
+        h('button',{class:'d',onclick:async()=>{if(confirm('حذف الكارت؟')){await sb.from('prompts').delete().eq('id',p.id);load()}}},'حذف')] : ''),
+    det);
+}
+function render(){
+  $('adminBox').hidden = !isAdmin;
+  $('authBtn').textContent = isAdmin ? 'تسجيل خروج' : 'دخول المشرف';
+  $('list').replaceChildren(...(prompts.length ? prompts.map(card) : [h('div',{class:'empty'},'لا توجد برومبتات بعد')]));
+}
+$('authBtn').onclick = async () => {
+  if (isAdmin){ await sb.auth.signOut(); isAdmin=false; editing=null; render(); return; }
+  $('login').hidden = !$('login').hidden;
+};
+$('go').onclick = async () => {
+  const r = await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+  if (r.error) return toast('بيانات الدخول غير صحيحة');
+  isAdmin = true; $('login').hidden = true; $('pw').value=''; render();
+};
+$('add').onclick = async () => {
+  const t=$('nt').value.trim(), b=$('nb').value;
+  if (!t || !b.trim()) return toast('اكتب العنوان والنص');
+  const r = await sb.from('prompts').insert({title:t,body:b});
+  if (r.error) return toast('فشل الإضافة');
+  $('nt').value=''; $('nb').value=''; load();
+};
+(async () => {
+  const {data} = await sb.auth.getSession();
+  isAdmin = !!data.session;
+  load();
+})();
+</script>
+</body>
+</html>
