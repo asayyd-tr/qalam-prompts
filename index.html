@@ -141,7 +141,7 @@ $('add').onclick = async () => {
   const t=$('nt').value.trim(), b=$('nb').value;
   if (!t || !b.trim()) return toast('اكتب العنوان والنص');
   const r = await sb.from('prompts').insert({title:t,body:b});
-  if (r.error) return toast('فشل الإضافة');
+  if (r.error) return toast('فشل: ' + r.error.message);
   $('nt').value=''; $('nb').value=''; load();
 };
 (async () => {
