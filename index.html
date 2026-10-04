@@ -7,62 +7,121 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
---bg:#f6f5f1;--card:#fff;--text:#1c1b18;--muted:#6b685f;--line:#dedbd2;--accent:#1f6f5c;--accent-t:#fff;--btn:#efede6;--danger:#b3261e}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161614;--card:#201f1c;--text:#ece9e0;--muted:#9a968a;--line:#35332e;--accent:#4fb89e;--accent-t:#0e1a16;--btn:#2b2a26;--danger:#f2877f}}
-:root[data-theme="dark"]{--bg:#161614;--card:#201f1c;--text:#ece9e0;--muted:#9a968a;--line:#35332e;--accent:#4fb89e;--accent-t:#0e1a16;--btn:#2b2a26;--danger:#f2877f}
+--bg:#f6f5f1;--card:#fff;--text:#1c1b18;--muted:#6b685f;--line:#dedbd2;--accent:#1f6f5c;--accent-t:#fff;--btn:#efede6;--danger:#b3261e;
+--g-bg:#ecebe6;--g-fg:#5c5a52;--g-bd:#b5b2a8;--ok-bg:#e3f3ec;--ok-fg:#14573f;--ok-bd:#5fb393;--pin-bg:#cde8da;--pin-bd:#1f6f5c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161614;--card:#201f1c;--text:#ece9e0;--muted:#9a968a;--line:#35332e;--accent:#4fb89e;--accent-t:#0e1a16;--btn:#2b2a26;--danger:#f2877f;--g-bg:#2c2b27;--g-fg:#aaa69a;--g-bd:#4a4842;--ok-bg:#1c332a;--ok-fg:#7fd1b2;--ok-bd:#2f6b57;--pin-bg:#17402f;--pin-bd:#4fb89e}}
+:root[data-theme="dark"]{--bg:#161614;--card:#201f1c;--text:#ece9e0;--muted:#9a968a;--line:#35332e;--accent:#4fb89e;--accent-t:#0e1a16;--btn:#2b2a26;--danger:#f2877f;--g-bg:#2c2b27;--g-fg:#aaa69a;--g-bd:#4a4842;--ok-bg:#1c332a;--ok-fg:#7fd1b2;--ok-bd:#2f6b57;--pin-bg:#17402f;--pin-bd:#4fb89e}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;line-height:1.7}
-.wrap{max-width:900px;margin:0 auto;padding:20px 14px 50px}
-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px}
-h1{margin:0;font-size:1.5rem;letter-spacing:.3px}
+.wrap{max-width:960px;margin:0 auto;padding:20px 14px 50px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+h1{margin:0;font-size:1.5rem}
 h1 small{display:block;font-size:.8rem;font-weight:400;color:var(--muted)}
+h3{margin:18px 0 8px;font-size:1.05rem}
 button{font:inherit;font-size:.88rem;background:var(--btn);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
 button:hover{border-color:var(--accent)}
 button.p{background:var(--accent);color:var(--accent-t);border-color:var(--accent);font-weight:700}
 button.d{color:var(--danger)}
-input,textarea{font:inherit;width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+input,textarea,select{font:inherit;width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+select{width:auto;max-width:100%;margin:0}
+input[type=checkbox]{width:auto;margin:0}
 textarea{min-height:110px;resize:vertical}
+.guide{background:var(--ok-bg);border:2px solid var(--accent);border-radius:14px;padding:12px 16px;margin-bottom:16px}
+.guide summary{font-weight:700;font-size:1.05rem;color:var(--ok-fg);cursor:pointer}
+.guide ol{margin:8px 0 0;padding-inline-start:22px}
+.guide li{margin-bottom:4px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px 10px;border-radius:14px;background:var(--card);border:2px solid var(--line);text-align:center}
+.tile .code{font-size:1.6rem;font-weight:800;color:var(--accent);letter-spacing:1px}
+.tile small{color:var(--muted)}
+.tile.on{border-color:var(--accent);background:var(--ok-bg)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card.ok{border-color:var(--ok-bd)}
+.card.rev{border-color:var(--g-bd);background:var(--g-bg)}
+.card.pin{background:var(--pin-bg);border-color:var(--pin-bd)}
 .card h2{margin:0;font-size:1.1rem}
+.top{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bd{font-size:.76rem;font-weight:700;padding:2px 9px;border-radius:20px}
+.bd.ok{background:var(--ok-bg);color:var(--ok-fg);border:1px solid var(--ok-bd)}
+.bd.gr{background:var(--g-bg);color:var(--g-fg);border:1px solid var(--g-bd)}
+.bd.pn{background:var(--pin-bd);color:var(--accent-t)}
+.cat{font-size:.78rem;color:var(--muted)}
 .body{white-space:pre-wrap;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start;background:var(--bg);border-radius:10px;padding:10px 12px;max-height:260px;overflow:auto}
-.row{display:flex;gap:6px;flex-wrap:wrap}
+.body.rich,.ed{white-space:normal}
+.body.rich[dir=auto]>*,.ed[dir=auto]>*{unicode-bidi:plaintext;text-align:start}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tb{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.ed{min-height:300px;resize:vertical;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;outline:none;font-size:1.05rem;overflow-wrap:anywhere;margin-bottom:8px}
+.chk{display:flex;gap:6px;align-items:center;font-size:.9rem}
 details{border-top:1px solid var(--line);padding-top:8px}
 summary{cursor:pointer;color:var(--muted);font-size:.9rem}
 .cm{border-bottom:1px dashed var(--line);padding:6px 0;font-size:.92rem;overflow-wrap:anywhere}
 .cm b{font-size:.82rem;color:var(--muted)}
 .hint{font-weight:700;margin:10px 0 6px;font-size:.92rem}
-.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:16px}
 .hp{position:absolute;left:-9999px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:10}
 .modal[hidden]{display:none}
 .mbox{background:var(--card);border:1px solid var(--line);border-radius:14px;width:min(100%,820px);max-height:100%;display:flex;flex-direction:column;padding:16px;gap:10px}
 .mbox h2{margin:0;font-size:1.2rem}
 .mbox .body{max-height:none;flex:1;overflow:auto;font-size:1.05rem}
-#q{margin-bottom:14px}
+#q{margin-bottom:6px}
 #toast{position:fixed;z-index:20;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:20px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.show{opacity:1}
 .empty{color:var(--muted);text-align:center;padding:30px}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Qalam Prompts<small>مكتبة برومبتات — انسخ واستخدم</small></h1>
+    <h1>Qalam Prompts<small>مكتبة برومبتات الترجمة — انسخ واستخدم</small></h1>
     <button id="authBtn">دخول المشرف</button>
   </header>
+
+  <details class="guide" open>
+    <summary>📖 دليل الاستخدام السريع</summary>
+    <ol>
+      <li><b>اختار القسم:</b> اضغط على الأيقونة الكبيرة المناسبة (ترجمة من/إلى) وهتظهر برومباتاتها.</li>
+      <li><b>ابحث:</b> اكتب أي كلمة في خانة البحث للوصول للعنوان أو النص.</li>
+      <li><b>انسخ واقرأ:</b> 📋 نسخ بينسخ البرومت، و⤢ عرض كامل بيفتحه في شاشة كبيرة.</li>
+      <li><b>افهم العلامات:</b> ✔ <b>Confirmed Prompt</b> (أخضر) = راجعه المشرف وموثوق · ⏳ <b>Under Review</b> (رمادي) = مقترح من زائر ولسه متراجعش · 📌 <b>مثبّت</b> = من أهم البرومبتات.</li>
+      <li><b>عندك تعديل؟</b> افتح 💬 الملاحظات تحت البرومت واكتب اقتراحك.</li>
+      <li><b>عندك برومت جديد؟</b> اضغط ➕ اقترح برومت، وهيظهر Under Review لحد ما يتراجع.</li>
+    </ol>
+  </details>
+
   <div id="login" class="box" hidden>
     <input id="em" type="email" placeholder="الإيميل" dir="ltr" autocomplete="username">
     <input id="pw" type="password" placeholder="كلمة المرور" dir="ltr" autocomplete="current-password">
     <button class="p" id="go">دخول</button>
   </div>
   <div id="adminBox" class="box" hidden>
-    <input id="nt" placeholder="عنوان الكارت">
-    <textarea id="nb" placeholder="نص البرومت" dir="auto"></textarea>
+    <h3 style="margin-top:0">➕ إضافة برومت (مشرف)</h3>
+    <input id="nt" placeholder="عنوان الكارت" dir="auto">
+    <div class="row" style="margin-bottom:8px"><select id="nc"></select></div>
+    <div id="ne"></div>
     <button class="p" id="add">+ إضافة كارت</button>
   </div>
+
+  <div id="tiles" class="tiles"></div>
+  <div class="row" style="margin-bottom:10px">
+    <button id="showAll" hidden>عرض كل الأقسام</button>
+    <button id="sgBtn">➕ اقترح برومت</button>
+  </div>
+  <div id="sg" class="box" hidden>
+    <div class="hint" style="margin-top:0">اقترح برومت — هيظهر Under Review لحد ما المشرف يراجعه</div>
+    <input id="st" placeholder="العنوان" maxlength="150" dir="auto">
+    <div class="row" style="margin-bottom:8px"><select id="sc"></select></div>
+    <textarea id="sb" placeholder="نص البرومت" maxlength="8000" dir="auto"></textarea>
+    <input id="sh" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="p" id="sgSend">إرسال الاقتراح</button>
+  </div>
   <input id="q" type="search" placeholder="🔍 ابحث في العناوين والنصوص…" dir="auto" autocomplete="off">
+  <section id="pinWrap" hidden><h3>📌 برومبتات مثبّتة</h3><div id="pins" class="grid"></div></section>
+  <h3 id="allH">كل البرومبتات</h3>
   <div id="list" class="grid"></div>
 </div>
 <div id="modal" class="modal" hidden>
@@ -80,9 +139,11 @@ const SUPABASE_ANON_KEY = 'sb_publishable_q-cGK9qlSUoJ_eGfGtVcUQ_VBqra6LV';
 // ==========================================
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const $ = id => document.getElementById(id);
-let isAdmin = false, prompts = [], cms = {}, editing = null, openSet = new Set();
+const CATS = [['en-ar','EN → AR','الترجمة من الإنجليزية إلى العربية'],['ar-en','AR → EN','الترجمة من العربية إلى الإنجليزية'],['ar-other','AR → ···','الترجمة من العربية إلى لغات أخرى'],['en-other','EN → ···','الترجمة من الإنجليزية إلى لغات أخرى']];
+const catName = k => (CATS.find(c => c[0] === k) || [])[2] || '';
+let isAdmin = false, prompts = [], cms = {}, editing = null, cat = 'all', openSet = new Set();
 
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
 function h(tag, props = {}, ...kids){
   const e = document.createElement(tag);
   for (const k in props){ if (k.startsWith('on')) e[k] = props[k]; else if (k === 'class') e.className = props[k]; else e.setAttribute(k, props[k]); }
@@ -94,12 +155,40 @@ async function copy(t){
   catch(e){ const a=h('textarea');a.value=t;document.body.append(a);a.select();document.execCommand('copy');a.remove(); }
   toast('تم النسخ ✓');
 }
+function norm(s){return s.toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')}
+const toHtml = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+const OK = new Set(['B','STRONG','I','EM','U','S','STRIKE','BR','DIV','P','UL','OL','LI','H2','H3','SPAN']);
+function clean(html){
+  const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  const walk = n => [...n.childNodes].forEach(c => {
+    if (c.nodeType === 3) return;
+    if (c.nodeType === 1 && OK.has(c.tagName)){ [...c.attributes].forEach(a => c.removeAttribute(a.name)); walk(c); return; }
+    if (c.nodeType === 1 && ['SCRIPT','STYLE'].includes(c.tagName)){ c.remove(); return; }
+    walk(c); c.replaceWith(...c.childNodes);
+  });
+  walk(doc.body); return doc.body.innerHTML;
+}
+function editor(html){
+  const bar = h('div',{class:'tb'});
+  const ed = h('div',{class:'ed',contenteditable:'true',dir:'auto'}); ed.innerHTML = clean(html);
+  const btn = (l, f) => bar.append(h('button',{type:'button',onmousedown:e=>e.preventDefault(),onclick:()=>{ed.focus();f()}},l));
+  [['bold','B'],['italic','I'],['underline','U'],['strikeThrough','S'],['insertUnorderedList','• قائمة'],['insertOrderedList','1. قائمة'],['removeFormat','مسح التنسيق']].forEach(([c,l]) => btn(l,()=>document.execCommand(c)));
+  ['auto','rtl','ltr'].forEach(d => btn(d.toUpperCase(),()=>ed.setAttribute('dir',d)));
+  const w = h('div',{}, bar, ed);
+  w.get = () => ({html: clean(ed.innerHTML), text: ed.innerText.trim()});
+  w.reset = () => { ed.innerHTML = ''; };
+  return w;
+}
+const catSel = v => { const s = h('select',{}, CATS.map(c => h('option',{value:c[0]},c[2]))); if (v) s.value = v; return s; };
+const bodyEl = p => { const b = h('div',{class:'body'+(p.html?' rich':''),dir:'auto'}); if (p.html) b.innerHTML = clean(p.html); else b.textContent = p.body; return b; };
+const upd = async (id, o) => { const r = await sb.from('prompts').update(o).eq('id', id); if (r.error) return toast('فشل: '+r.error.message); load(); };
+
 async function load(){
   const [p, c] = await Promise.all([
     sb.from('prompts').select('*').order('created_at', {ascending:false}),
     sb.from('comments').select('*').order('created_at', {ascending:true})
   ]);
-  if (p.error){ $('list').replaceChildren(h('div',{class:'empty'},'تعذّر تحميل البيانات — تأكد من إعدادات Supabase')); return; }
+  if (p.error){ $('list').replaceChildren(h('div',{class:'empty'},'تعذّر تحميل البيانات: '+p.error.message)); return; }
   prompts = p.data || []; cms = {};
   (c.data || []).forEach(x => (cms[x.prompt_id] ||= []).push(x));
   render();
@@ -107,10 +196,16 @@ async function load(){
 function card(p){
   if (editing === p.id){
     const t = h('input',{dir:'auto'}); t.value = p.title;
-    const b = h('textarea',{dir:'auto'}); b.value = p.body;
-    return h('div',{class:'card'}, t, b, h('div',{class:'row'},
-      h('button',{class:'p',onclick:async()=>{const r=await sb.from('prompts').update({title:t.value.trim(),body:b.value}).eq('id',p.id);if(r.error)return toast('فشل الحفظ');editing=null;load()}},'حفظ'),
-      h('button',{onclick:()=>{editing=null;render()}},'إلغاء')));
+    const c = catSel(p.category);
+    const s = h('select',{}, h('option',{value:'confirmed'},'Confirmed Prompt'), h('option',{value:'review'},'Under Review')); s.value = p.status;
+    const pn = h('input',{type:'checkbox'}); pn.checked = p.pinned;
+    const ed = editor(p.html || toHtml(p.body));
+    return h('div',{class:'card'}, t, h('div',{class:'row',style:'margin-bottom:8px'}, c, s, h('label',{class:'chk'}, pn, ' مثبّت')), ed,
+      h('div',{class:'row'},
+        h('button',{class:'p',onclick:async()=>{const v=ed.get();if(!t.value.trim()||!v.text)return toast('اكتب العنوان والنص');
+          const r=await sb.from('prompts').update({title:t.value.trim(),category:c.value,status:s.value,pinned:pn.checked,body:v.text,html:v.html}).eq('id',p.id);
+          if(r.error)return toast('فشل الحفظ: '+r.error.message);editing=null;load()}},'حفظ'),
+        h('button',{onclick:()=>{editing=null;render()}},'إلغاء')));
   }
   const list = cms[p.id] || [];
   const nm = h('input',{placeholder:'اسمك (اختياري)',maxlength:60});
@@ -129,37 +224,56 @@ function card(p){
     h('div',{class:'hint'},'اترك ملاحظاتك لتعديل تراه مناسباً للبرومت'), nm, ms, hp, send);
   if (openSet.has(p.id)) det.open = true;
   det.ontoggle = () => det.open ? openSet.add(p.id) : openSet.delete(p.id);
-  return h('div',{class:'card'},
-    h('h2',{dir:'auto'},p.title),
-    h('div',{class:'body',dir:'auto'},p.body),
-    h('div',{class:'row'}, h('button',{class:'p',onclick:()=>copy(p.body)},'📋 نسخ'),
-      h('button',{onclick:()=>openModal(p)},'⤢ عرض كامل'),
-      isAdmin ? [h('button',{onclick:()=>{editing=p.id;render()}},'تعديل'),
+  const ok = p.status === 'confirmed';
+  return h('div',{class:'card '+(ok?'ok':'rev')+(p.pinned?' pin':'')},
+    h('div',{class:'top'}, h('span',{class:'bd '+(ok?'ok':'gr')}, ok ? '✔ Confirmed Prompt' : '⏳ Under Review'), p.pinned ? h('span',{class:'bd pn'},'📌 مثبّت') : '', h('span',{class:'cat'},catName(p.category))),
+    h('h2',{dir:'auto'},p.title), bodyEl(p),
+    h('div',{class:'row'}, h('button',{class:'p',onclick:()=>copy(p.body)},'📋 نسخ'), h('button',{onclick:()=>openModal(p)},'⤢ عرض كامل'),
+      isAdmin ? [ok ? '' : h('button',{class:'p',onclick:()=>upd(p.id,{status:'confirmed'})},'✔ توثيق'),
+        h('button',{onclick:()=>upd(p.id,{pinned:!p.pinned})},p.pinned?'إلغاء التثبيت':'📌 تثبيت'),
+        h('button',{onclick:()=>{editing=p.id;render()}},'تعديل'),
         h('button',{class:'d',onclick:async()=>{if(confirm('حذف الكارت؟')){await sb.from('prompts').delete().eq('id',p.id);load()}}},'حذف')] : ''),
     det);
 }
 function render(){
   $('adminBox').hidden = !isAdmin;
   $('authBtn').textContent = isAdmin ? 'تسجيل خروج' : 'دخول المشرف';
+  $('tiles').replaceChildren(...CATS.map(([k,code,name]) => h('button',{class:'tile'+(cat===k?' on':''),onclick:()=>{cat=cat===k?'all':k;render()}},
+    h('span',{class:'code',dir:'ltr'},code), h('span',{},name), h('small',{},prompts.filter(p=>p.category===k).length+' برومت'))));
+  $('showAll').hidden = cat === 'all';
+  $('allH').textContent = cat === 'all' ? 'كل البرومبتات' : catName(cat);
   const q = norm($('q').value.trim());
-  const shown = q ? prompts.filter(p => norm(p.title + ' ' + p.body).includes(q)) : prompts;
-  $('list').replaceChildren(...(shown.length ? shown.map(card) : [h('div',{class:'empty'}, prompts.length ? 'لا توجد نتائج مطابقة للبحث' : 'لا توجد برومبتات بعد')]));
-}
-function norm(s){
-  return s.toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
+  const shown = prompts.filter(p => (cat==='all' || p.category===cat) && (!q || norm(p.title+' '+p.body).includes(q)));
+  const pins = shown.filter(p => p.pinned);
+  const rest = shown.filter(p => !p.pinned).sort((a,b) => (a.status==='review') - (b.status==='review'));
+  $('pinWrap').hidden = !pins.length;
+  $('pins').replaceChildren(...pins.map(card));
+  $('list').replaceChildren(...(rest.length ? rest.map(card) : pins.length ? [] : [h('div',{class:'empty'}, prompts.length ? 'لا توجد نتائج مطابقة' : 'لا توجد برومبتات بعد')]));
 }
 function openModal(p){
-  $('mt').textContent = p.title;
-  $('mb').textContent = p.body;
+  const b = bodyEl(p);
+  $('mt').textContent = p.title; $('mb').className = b.className; $('mb').innerHTML = b.innerHTML;
   $('mcopy').onclick = () => copy(p.body);
-  $('modal').hidden = false;
-  document.body.style.overflow = 'hidden';
+  $('modal').hidden = false; document.body.style.overflow = 'hidden';
 }
 function closeModal(){ $('modal').hidden = true; document.body.style.overflow = ''; }
 $('mclose').onclick = closeModal;
 $('modal').onclick = e => { if (e.target === $('modal')) closeModal(); };
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 $('q').oninput = render;
+$('showAll').onclick = () => { cat = 'all'; render(); };
+$('sgBtn').onclick = () => { $('sg').hidden = !$('sg').hidden; };
+CATS.forEach(c => { $('nc').append(h('option',{value:c[0]},c[2])); $('sc').append(h('option',{value:c[0]},c[2])); });
+const addEd = editor(''); $('ne').append(addEd);
+$('sgSend').onclick = async () => {
+  if ($('sh').value) return;
+  const t = $('st').value.trim(), b = $('sb').value.trim();
+  if (!t || !b) return toast('اكتب العنوان والنص');
+  const r = await sb.from('prompts').insert({title:t, body:b, category:$('sc').value, status:'review'});
+  if (r.error) return toast('تعذّر الإرسال');
+  $('st').value = ''; $('sb').value = ''; $('sg').hidden = true;
+  toast('تم الإرسال ✓ — سيظهر Under Review حتى المراجعة'); load();
+};
 $('authBtn').onclick = async () => {
   if (isAdmin){ await sb.auth.signOut(); isAdmin=false; editing=null; render(); return; }
   $('login').hidden = !$('login').hidden;
@@ -170,11 +284,11 @@ $('go').onclick = async () => {
   isAdmin = true; $('login').hidden = true; $('pw').value=''; render();
 };
 $('add').onclick = async () => {
-  const t=$('nt').value.trim(), b=$('nb').value;
-  if (!t || !b.trim()) return toast('اكتب العنوان والنص');
-  const r = await sb.from('prompts').insert({title:t,body:b});
-  if (r.error) return toast('فشل: ' + r.error.message);
-  $('nt').value=''; $('nb').value=''; load();
+  const t = $('nt').value.trim(), v = addEd.get();
+  if (!t || !v.text) return toast('اكتب العنوان والنص');
+  const r = await sb.from('prompts').insert({title:t, body:v.text, html:v.html, category:$('nc').value, status:'confirmed'});
+  if (r.error) return toast('فشل الإضافة: '+r.error.message);
+  $('nt').value = ''; addEd.reset(); load();
 };
 (async () => {
   const {data} = await sb.auth.getSession();
